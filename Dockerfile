@@ -7,11 +7,11 @@ WORKDIR /app
 # 复制go.mod和go.sum文件（如果存在）
 COPY go.mod go.sum* ./
 
-# 下载依赖
-RUN go mod download
-
 # 复制源代码
 COPY . .
+
+# 下载依赖并生成go.sum
+RUN go mod tidy
 
 # 构建应用
 RUN CGO_ENABLED=0 GOOS=linux go build -o gemini-monitor .
