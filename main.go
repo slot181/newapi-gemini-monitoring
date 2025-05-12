@@ -85,9 +85,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("数据库连接测试失败: %v", err)
 	}
-	log.Println("成功连接到数据库")
+	log.Println("数据库连接测试成功")
 
 	// 处理主页请求
+	log.Println("注册主页处理函数...")
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		rows, err := db.Query("SELECT id, status, count_minute_usage, count_day_usage, tag FROM channels")
 		if err != nil {
@@ -609,6 +610,9 @@ func main() {
 	})
 
 	// 启动服务器
-	log.Printf("服务器启动在 http://localhost:%s", serverPort)
-	log.Fatal(http.ListenAndServe(":"+serverPort, nil))
+	log.Printf("尝试在 0.0.0.0:%s 上启动服务器...", serverPort)
+	err = http.ListenAndServe(":"+serverPort, nil)
+	if err != nil {
+		log.Fatalf("服务器启动失败: %v", err)
+	}
 }
