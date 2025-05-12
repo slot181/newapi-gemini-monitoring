@@ -20,8 +20,8 @@ BEGIN
         END
     );
 
-    -- 更新 channels 表
-    UPDATE gemini.channels
+    -- 更新 channels 表 (移除数据库名前缀，使用当前数据库)
+    UPDATE channels
     -- 左连接 logs 表，统计每个 channel 的使用次数
     LEFT JOIN (
         SELECT
@@ -30,31 +30,31 @@ BEGIN
             SUM(created_at >= minute_ago) AS minute_count,
             -- 计算从早上8点开始的总日志数量
             COUNT(*) AS day_count
-        FROM gemini.logs
+        FROM logs -- 移除数据库名前缀
         -- 只考虑从早上8点开始的日志
         WHERE created_at >= day_start_8am
         GROUP BY channel_id
-    ) AS logs_stats ON gemini.channels.id = logs_stats.channel_id
+    ) AS logs_stats ON channels.id = logs_stats.channel_id -- 移除数据库名前缀
     -- 设置更新的值
     SET
         -- 更新分钟使用次数，如果 logs_stats 中没有记录则为 0
-        gemini.channels.count_minute_usage = IFNULL(logs_stats.minute_count, 0),
+        channels.count_minute_usage = IFNULL(logs_stats.minute_count, 0), -- 移除数据库名前缀
         -- 更新天使用次数，如果 logs_stats 中没有记录则为 0
-        gemini.channels.count_day_usage = IFNULL(logs_stats.day_count, 0),
+        channels.count_day_usage = IFNULL(logs_stats.day_count, 0), -- 移除数据库名前缀
         -- 更新状态
-        gemini.channels.status = CASE
+        channels.status = CASE -- 移除数据库名前缀
             -- 如果是普号 (tag != 'gcp') 且分钟使用超限(>4) 或 天使用超限(>25)
-            WHEN (gemini.channels.tag != 'gcp' AND (IFNULL(logs_stats.minute_count, 0) > 4 OR IFNULL(logs_stats.day_count, 0) > 25))
+            WHEN (channels.tag != 'gcp' AND (IFNULL(logs_stats.minute_count, 0) > 4 OR IFNULL(logs_stats.day_count, 0) > 25)) -- 移除数据库名前缀
             -- 或者 如果是付费号 (tag = 'gcp') 且分钟使用超限(>19) 或 天使用超限(>99)
-            OR (gemini.channels.tag = 'gcp' AND (IFNULL(logs_stats.minute_count, 0) > 19 OR IFNULL(logs_stats.day_count, 0) > 99))
+            OR (channels.tag = 'gcp' AND (IFNULL(logs_stats.minute_count, 0) > 19 OR IFNULL(logs_stats.day_count, 0) > 99)) -- 移除数据库名前缀
             -- 则将状态设置为 2 (自动禁用)
             THEN 2
             -- 否则将状态设置为 1 (可用)
             ELSE 1
         END,
         -- 更新权重 (监控应用目前未使用此字段)
-        gemini.channels.weight = CASE
-            WHEN gemini.channels.tag = 'gcp' THEN GREATEST(1, 100 - IFNULL(logs_stats.day_count, 0))
+        channels.weight = CASE -- 移除数据库名前缀
+            WHEN channels.tag = 'gcp' THEN GREATEST(1, 100 - IFNULL(logs_stats.day_count, 0)) -- 移除数据库名前缀
             ELSE GREATEST(1, 25 - IFNULL(logs_stats.day_count, 0))
         END;
 
