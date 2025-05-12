@@ -116,11 +116,12 @@ func main() {
 				CountDayUsage:    channel.CountDayUsage,
 			}
 
+			// 根据SQL脚本逻辑调整：status 1 为可用，其他（包括 2）为自动禁用
 			if channel.Status == "1" {
 				view.StatusDisplay = "可用"
 				view.IsAvailable = true
 			} else {
-				view.StatusDisplay = "自动禁用"
+				view.StatusDisplay = "自动禁用" // 包括 status 2 或其他非 1 的值
 				view.IsAvailable = false
 			}
 
