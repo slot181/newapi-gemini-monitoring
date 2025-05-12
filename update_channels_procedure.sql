@@ -1,6 +1,11 @@
 -- 定义分隔符，因为存储过程内部有分号
 DELIMITER //
 
+-- 如果存在同名存储过程，则先删除
+DROP PROCEDURE IF EXISTS UpdateChannelStats;
+
+//
+
 -- 创建存储过程，用于更新 channels 表的使用情况和状态
 CREATE PROCEDURE UpdateChannelStats()
 BEGIN
