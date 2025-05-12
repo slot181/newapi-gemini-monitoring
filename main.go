@@ -611,7 +611,7 @@ func main() {
 	})
 
 	// 启动服务器
-	log.Printf("尝试在 0.0.0.0:%s 上启动服务器...", serverPort)
+	log.Printf("在 0.0.0.0:%s 上成功启动服务器...", serverPort)
 	err = http.ListenAndServe(":"+serverPort, nil)
 	if err != nil {
 		log.Fatalf("服务器启动失败: %v", err)
